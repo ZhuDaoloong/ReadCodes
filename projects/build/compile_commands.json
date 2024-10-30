@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/root/loongServer/build",
+  "command": "/usr/bin/c++    -g   -o CMakeFiles/demo.dir/main.cpp.o -c /root/loongServer/main.cpp",
+  "file": "/root/loongServer/main.cpp"
+}
+]
