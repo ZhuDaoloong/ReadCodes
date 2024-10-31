@@ -1,3 +1,0 @@
-/root/loongServer/build/CMakeFiles/rebuild_cache.dir
-/root/loongServer/build/CMakeFiles/edit_cache.dir
-/root/loongServer/build/CMakeFiles/demo.dir

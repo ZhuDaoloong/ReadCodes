@@ -1,3 +1,5 @@
 projects/LoongServer/.vscode/
 projects/LoongServer/bin/
 projects/LoongServer/build/
+projects/others/
+.vscode/
