@@ -15,13 +15,63 @@
 #include "thread.h"
 #include "singleton.h"
 
+/**
+ * @brief put log into logger using stream
+ */
+inline void LOONGSERVER_LOG_LEVEL(std::shared_ptr<loongserver::Logger> logger, loongserver::LogLevel::Level level){
+  if(logger->getLevel() <= level){
+    loongserver::LogEventWrap(loongserver::LogEvent::spLE(new loongserver::LogEvent(logger, level, 
+      __FILE__, __LINE__, 0, 
+      loongserver::GetThreadId(),loongserver::GetFiberId(), time(0), loongserver::Thread::GetName()))).getSS();
+  }
+}
 
-// constexpr void LOONGSEVER_LOG_LEVEL(loggger& , level& ){
-  
-// }c
+inline void LOONGSERVER_LOG_DEBUG(std::shared_ptr<loongserver::Logger> logger) { LOONGSERVER_LOG_LEVEL(logger, loongserver::LogLevel::DEBUG); }
+inline void LOONGSERVER_LOG_INFO(std::shared_ptr<loongserver::Logger> logger) { LOONGSERVER_LOG_LEVEL(logger, loongserver::LogLevel::INFO); }
+inline void LOONGSERVER_LOG_WARN(std::shared_ptr<loongserver::Logger> logger) { LOONGSERVER_LOG_LEVEL(logger, loongserver::LogLevel::WARN); }
+inline void LOONGSERVER_LOG_ERROR(std::shared_ptr<loongserver::Logger> logger) { LOONGSERVER_LOG_LEVEL(logger, loongserver::LogLevel::ERROR); }
+inline void LOONGSERVER_LOG_FATAL(std::shared_ptr<loongserver::Logger> logger) { LOONGSERVER_LOG_LEVEL(logger, loongserver::LogLevel::FATAL); }
 
+/**
+ * @brief put log into logger using formatter
+ */
+inline void LOONGSEVER_LOG_FMT_LEVEL(std::shared_ptr<loongserver::Logger> logger, loongserver::LogLevel::Level level, std::shared_ptr<loongserver::LogFormatter> fmt, ...) {
+  if (logger->getLevel() <= level) {
+    loongserver::LogEventWrap(loongserver::LogEvent::spLE(new loongserver::LogEvent(logger, level, 
+      __FILE__, __LINE__, 0, 
+      loongserver::GetThreadId(),loongserver::GetFiberId(), time(0), loongserver::Thread::GetName()))).getEvent()->format(fmt, __VA_ARGS__);
+  }
+}
 
+inline void LOONGSEVER_LOG_FMT_DEBUG(std::shared_ptr<loongserver::Logger> logger, std::shared_ptr<loongserver::LogFormatter> fmt, ...){
+  LOONGSEVER_LOG_FMT_LEVEL(logger, loongserver::LogLevel::DEBUG, fmt, __VA_ARGS__);
+}
+inline void LOONGSEVER_LOG_FMT_INFO(std::shared_ptr<loongserver::Logger> logger, std::shared_ptr<loongserver::LogFormatter> fmt, ...){
+  LOONGSEVER_LOG_FMT_LEVEL(logger, loongserver::LogLevel::INFO, fmt, __VA_ARGS__);
+}
+inline void LOONGSEVER_LOG_FMT_WARN(std::shared_ptr<loongserver::Logger> logger, std::shared_ptr<loongserver::LogFormatter> fmt, ...){
+  LOONGSEVER_LOG_FMT_LEVEL(logger, loongserver::LogLevel::WARN, fmt, __VA_ARGS__);
+}
+inline void LOONGSEVER_LOG_FMT_ERROR(std::shared_ptr<loongserver::Logger> logger, std::shared_ptr<loongserver::LogFormatter> fmt, ...){
+  LOONGSEVER_LOG_FMT_LEVEL(logger, loongserver::LogLevel::ERROR, fmt, __VA_ARGS__);
+}
+inline void LOONGSEVER_LOG_FMT_FATAL(std::shared_ptr<loongserver::Logger> logger, std::shared_ptr<loongserver::LogFormatter> fmt, ...){
+  LOONGSEVER_LOG_FMT_LEVEL(logger, loongserver::LogLevel::FATAL, fmt, __VA_ARGS__);
+}
 
+/**
+ * @brief get root logger
+ */
+inline auto LOONGSERVER_LOG_ROOT(){
+  return loongserver::sLOGGERMGR::getInstance()->getRoot();
+}
+
+/**
+ * @brief get logger by name
+ */
+inline auto LOONGSERVER_LOG_NAME(std::string name) {
+  return loongserver::sLOGGERMGR::GetInstance()->getLogger(name);
+}
 namespace loongserver{
 class Logger;
 class LoggerManager;
@@ -278,7 +328,7 @@ protected:
 };
 
 class Logger : public std::enable_shared_from_this<Logger> {
-  friend class loggerManager;
+  friend class LoggerManager;
 public:
   using spLOGGER = std::shared_ptr<Logger>;
   using MUTEXTYPE = Spinlock;
@@ -426,12 +476,11 @@ public:
 
 private:
   MUTEXTYPE                               m_mutex;
-  std::map<std::string, Logger::spLOGGER> m_logger;
+  std::map<std::string, Logger::spLOGGER> m_loggers;
   Logger::spLOGGER                        m_root;
 };
 
 using sLOGGERMGR = loongserver::Singleton<LoggerManager>;
 
 }
-
 #endif
